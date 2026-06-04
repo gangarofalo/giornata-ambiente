@@ -77,6 +77,22 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
+    .intro-title {
+      font-size: 28px;
+      margin-bottom: 4px;
+      color: var(--green);
+    }
+
+    .intro-date {
+      font-weight: bold;
+      margin: 4px 0 16px;
+    }
+
+    .intro-list {
+      margin: 12px 0;
+      padding-left: 20px;
+    }
+
     .progress {
       font-size: 14px;
       color: #5c6670;
@@ -267,7 +283,27 @@
   </header>
 
   <main>
-    <div class="card">
+    <div id="introCard" class="card">
+      <h2 class="intro-title">🌍 Esplora Ambiente</h2>
+      <p class="intro-date">Giornata Mondiale dell'Ambiente 2026 — 5 giugno 2026</p>
+      <p>Oggi parteciperai a un percorso a tappe nel territorio di Villafranca.</p>
+      <p>La Giornata Mondiale dell'Ambiente ci ricorda che il pianeta non è qualcosa di lontano da noi: è nei luoghi che attraversiamo ogni giorno, nell'acqua che usiamo, nell'energia che consumiamo, nei materiali che scegliamo e negli spazi che possiamo proteggere o riqualificare.</p>
+      <p>Durante il percorso dovrai osservare, ragionare e collaborare con il tuo gruppo.</p>
+      <ul class="intro-list">
+        <li>Leggi l'approfondimento di ogni tappa.</li>
+        <li>Rispondi alla domanda per sbloccare la parola chiave.</li>
+        <li>Usa l'indizio e la mappa per trovare il luogo successivo.</li>
+        <li>Alla fine crea uno slogan usando tutte le parole chiave.</li>
+      </ul>
+      <label for="studentNameInput"><strong>Nome e cognome:</strong></label>
+      <input id="studentNameInput" type="text" autocomplete="name" placeholder="Scrivi qui il tuo nome e cognome" />
+      <div class="buttons">
+        <button id="startBtn" type="button">INIZIA</button>
+      </div>
+      <div id="introMessageBox" class="message"></div>
+    </div>
+
+    <div id="gameCard" class="card" style="display:none;">
       <div class="progress" id="progressText"></div>
       <span class="theme" id="themeText"></span>
       <h2 id="titleText"></h2>
@@ -305,6 +341,18 @@
           <button id="nextBtn" type="button" style="display:none;">Vai alla tappa successiva</button>
         </div>
         <div id="placeMessageBox" class="message"></div>
+      </div>
+
+      <div id="finalSloganBox" class="final-box" style="display:none;">
+        <h3>🏁 Sfida finale</h3>
+        <p>Ora create uno slogan per l'ambiente. Per completare la missione dovete usare <strong>tutte</strong> le parole chiave raccolte:</p>
+        <p><strong>SOLARE · PACE · LOCALE · ACQUA · RICICLO · RIUSO · NATURA</strong></p>
+        <label for="sloganInput"><strong>Scrivete qui lo slogan:</strong></label>
+        <textarea id="sloganInput" autocomplete="off" placeholder="Esempio: Con energia solare, pace, acqua, riciclo, riuso, natura e provenienza locale costruiamo un futuro migliore."></textarea>
+        <div class="buttons">
+          <button id="checkSloganBtn" type="button">Verifica slogan</button>
+        </div>
+        <div id="sloganMessageBox" class="message"></div>
       </div>
     </div>
   </main>
@@ -453,10 +501,13 @@
             "theme": "NATURA",
             "address": "Giardino Magenta, Villafranca di Verona",
             "learning": "Questo giardino dimostra che anche un piccolo spazio verde può avere un grande valore. Le piante, gli insetti, gli uccelli e il terreno formano un piccolo ecosistema. Più un ambiente è ricco di vita, più è forte: questa ricchezza si chiama biodiversità. Proteggere la natura non significa solo salvare grandi foreste lontane, ma anche prendersi cura degli spazi vicini a noi: un giardino, un'aiuola, un parco, un cortile scolastico. La sostenibilità comincia dai luoghi che viviamo ogni giorno. Messaggio da ricordare: la natura va protetta anche nei piccoli spazi quotidiani, perché ogni luogo vivo conta.",
-            "question": "Sfida finale: costruite uno slogan per l'ambiente usando almeno tre di queste parole: SOLARE, PACE, LOCALE, ACQUA, RICICLO, RIUSO, NATURA.",
+            "question": "Quale parola indica piante, animali, insetti e l'ambiente vivo che ci circonda?",
+            "answers": [
+                  "NATURA"
+            ],
             "final": true,
-            "clue": "Missione completata! Tornate a scuola: l'avventura finisce dove è iniziata. Il futuro green lo costruirete voi, con le mani.",
-            "label": "Scrivete qui il vostro slogan:"
+            "clue": "Avete raccolto tutte le parole chiave. Ora usatele per creare lo slogan finale. Poi tornate a scuola: l'avventura finisce dove è iniziata. Il futuro green lo costruirete voi, con le mani.",
+            "label": "Inserisci la parola chiave:"
       }
 ];
 
@@ -482,8 +533,56 @@
     const placeInput = document.getElementById("placeInput");
     const checkPlaceBtn = document.getElementById("checkPlaceBtn");
     const placeMessageBox = document.getElementById("placeMessageBox");
+    const finalSloganBox = document.getElementById("finalSloganBox");
+    const sloganInput = document.getElementById("sloganInput");
+    const checkSloganBtn = document.getElementById("checkSloganBtn");
+    const sloganMessageBox = document.getElementById("sloganMessageBox");
+    const finalKeywords = ["SOLARE", "PACE", "LOCALE", "ACQUA", "RICICLO", "RIUSO", "NATURA"];
     const mapOverlay = document.getElementById("mapOverlay");
     const mapImage = document.getElementById("mapImage");
+    const introCard = document.getElementById("introCard");
+    const gameCard = document.getElementById("gameCard");
+    const studentNameInput = document.getElementById("studentNameInput");
+    const startBtn = document.getElementById("startBtn");
+    const introMessageBox = document.getElementById("introMessageBox");
+
+    function getStudentName() {
+      return (localStorage.getItem("esploraAmbienteStudentName") || "").trim();
+    }
+
+    function showIntro() {
+      introCard.style.display = "block";
+      gameCard.style.display = "none";
+      studentNameInput.value = getStudentName();
+      setTimeout(() => studentNameInput.focus(), 50);
+    }
+
+    function showGame() {
+      introCard.style.display = "none";
+      gameCard.style.display = "block";
+    }
+
+    function startGame() {
+      const name = studentNameInput.value.trim().replace(/\s+/g, " ");
+
+      if (name.length < 3) {
+        showMessage(introMessageBox, "Scrivi nome e cognome prima di iniziare.", "error");
+        return;
+      }
+
+      localStorage.setItem("esploraAmbienteStudentName", name);
+      localStorage.setItem("esploraAmbienteStarted", "true");
+
+      if (!localStorage.getItem("esploraAmbienteStep")) {
+        currentStep = 0;
+        localStorage.setItem("esploraAmbienteStep", currentStep);
+      }
+
+      hideMessage(introMessageBox);
+      showGame();
+      renderStep();
+      window.scrollTo(0, 0);
+    }
 
     function normalize(text) {
       return text
@@ -496,15 +595,11 @@
     }
 
     function renderAnswerField(step) {
-      if (step.final) {
-        answerControl.innerHTML = '<textarea id="answerInput" autocomplete="off"></textarea>';
-      } else {
-        answerControl.innerHTML = '<input id="answerInput" type="text" autocomplete="off" />';
-      }
+      answerControl.innerHTML = '<input id="answerInput" type="text" autocomplete="off" />';
 
       const input = document.getElementById("answerInput");
       input.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" && !steps[currentStep].final) {
+        if (e.key === "Enter") {
           e.preventDefault();
           checkAnswer();
         }
@@ -530,6 +625,9 @@
 
       clueBox.classList.remove("visible");
       placeCheckBox.classList.remove("visible");
+      finalSloganBox.style.display = "none";
+      sloganInput.value = "";
+      hideMessage(sloganMessageBox);
       placeInput.value = "";
       nextBtn.style.display = "none";
       prevBtn.disabled = currentStep === 0;
@@ -557,9 +655,7 @@
 
       let correct = false;
 
-      if (step.final) {
-        correct = value.length >= 12;
-      } else if (step.free) {
+      if (step.free) {
         correct = value.length >= 3 && !value.includes(" ");
       } else {
         correct = step.answers.includes(value);
@@ -567,10 +663,13 @@
 
       if (correct) {
         if (step.final) {
-          showMessage(messageBox, "✅ Slogan registrato! Missione completata.", "ok");
+          showMessage(messageBox, "✅ Corretto! Avete sbloccato la parola NATURA e la sfida finale.", "ok");
           clueBox.classList.add("visible");
-          clueText.textContent = step.clue + " Buona Giornata Mondiale dell'Ambiente!";
+          clueText.textContent = step.clue;
           placeCheckBox.classList.remove("visible");
+          finalSloganBox.style.display = "block";
+          hideMessage(sloganMessageBox);
+          setTimeout(() => sloganInput.focus(), 150);
         } else {
           showMessage(messageBox, "✅ Corretto! Avete sbloccato l'indizio successivo.", "ok");
           clueBox.classList.add("visible");
@@ -582,6 +681,26 @@
         }
       } else {
         showMessage(messageBox, "❌ Risposta non corretta. Rileggete l'approfondimento e riprovate.", "error");
+      }
+    }
+
+    function checkFinalSlogan() {
+      const value = normalize(sloganInput.value);
+
+      if (!value) {
+        showMessage(sloganMessageBox, "Scrivete uno slogan prima di completare la missione.", "error");
+        return;
+      }
+
+      const words = value.split(" ");
+      const missing = finalKeywords.filter(keyword => !words.includes(keyword));
+
+      if (missing.length === 0) {
+        const name = getStudentName();
+        const greeting = name ? `, ${name}` : "";
+        showMessage(sloganMessageBox, `✅ Slogan valido! Missione completata${greeting}. Buona Giornata Mondiale dell'Ambiente!`, "ok");
+      } else {
+        showMessage(sloganMessageBox, "❌ Lo slogan è quasi pronto, ma mancano queste parole chiave: " + missing.join(", ") + ".", "error");
       }
     }
 
@@ -627,7 +746,9 @@
       const ok = confirm("Vuoi ricominciare il percorso dalla partenza?");
       if (ok) {
         currentStep = 0;
-        localStorage.setItem("esploraAmbienteStep", currentStep);
+        localStorage.removeItem("esploraAmbienteStep");
+        localStorage.removeItem("esploraAmbienteStudentName");
+        localStorage.removeItem("esploraAmbienteStarted");
         location.reload();
       }
     }
@@ -647,6 +768,14 @@
       document.getElementById("zoomResetBtn").textContent = `${Math.round(mapZoom * 100)}%`;
     }
 
+    startBtn.addEventListener("click", startGame);
+    studentNameInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        startGame();
+      }
+    });
+
     document.getElementById("openMapBtn").addEventListener("click", openMap);
     document.getElementById("closeMapBtn").addEventListener("click", closeMap);
     document.getElementById("zoomInBtn").addEventListener("click", function() {
@@ -663,6 +792,7 @@
     });
 
     checkBtn.addEventListener("click", checkAnswer);
+    checkSloganBtn.addEventListener("click", checkFinalSlogan);
     checkPlaceBtn.addEventListener("click", checkNextPlace);
     nextBtn.addEventListener("click", goNext);
     prevBtn.addEventListener("click", goPrev);
@@ -679,7 +809,19 @@
       if (e.key === "Escape") closeMap();
     });
 
-    renderStep();
+    function initApp() {
+      const started = localStorage.getItem("esploraAmbienteStarted") === "true";
+      const hasName = Boolean(getStudentName());
+
+      if (started && hasName) {
+        showGame();
+        renderStep();
+      } else {
+        showIntro();
+      }
+    }
+
+    initApp();
   </script>
 </body>
 </html>
