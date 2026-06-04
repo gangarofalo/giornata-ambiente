@@ -13,9 +13,7 @@
       --error: #b00020;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -166,9 +164,18 @@
       border: 1px solid #eadf9a;
     }
 
-    .clue.visible {
-      display: block;
+    .clue.visible { display: block; }
+
+    .place-check {
+      display: none;
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #eef6ff;
+      border: 1px solid #bcd7f2;
     }
+
+    .place-check.visible { display: block; }
 
     .buttons {
       display: flex;
@@ -194,9 +201,7 @@
       flex-direction: column;
     }
 
-    .map-overlay.visible {
-      display: flex;
-    }
+    .map-overlay.visible { display: flex; }
 
     .map-toolbar {
       flex: 0 0 auto;
@@ -250,13 +255,8 @@
         flex-direction: column;
       }
 
-      header button {
-        width: 100%;
-      }
-
-      h2 {
-        font-size: 22px;
-      }
+      header button { width: 100%; }
+      h2 { font-size: 22px; }
     }
   </style>
 </head>
@@ -280,7 +280,7 @@
       <div class="question" id="questionText"></div>
 
       <label for="answerInput" id="answerLabel">Inserisci la parola chiave:</label>
-      <input id="answerInput" type="text" autocomplete="off" />
+      <div id="answerControl"></div>
 
       <div class="buttons">
         <button id="checkBtn" type="button">Verifica</button>
@@ -291,11 +291,20 @@
       <div id="messageBox" class="message"></div>
 
       <div id="clueBox" class="clue">
-        <h3 id="clueTitle">📍 Indizio per il luogo successivo</h3>
+        <h3>📍 Indizio per il luogo successivo</h3>
         <p id="clueText"></p>
+      </div>
+
+      <div id="placeCheckBox" class="place-check">
+        <h3>🧭 Avete capito dove andare?</h3>
+        <p>Scrivete il nome del luogo da raggiungere. Solo se è corretto potete passare alla tappa successiva.</p>
+        <label for="placeInput"><strong>Luogo successivo:</strong></label>
+        <input id="placeInput" type="text" autocomplete="off" placeholder="Es. Castello Scaligero" />
         <div class="buttons">
-          <button id="nextBtn" type="button">Vai alla tappa successiva</button>
+          <button id="checkPlaceBtn" type="button">Controlla luogo</button>
+          <button id="nextBtn" type="button" style="display:none;">Vai alla tappa successiva</button>
         </div>
+        <div id="placeMessageBox" class="message"></div>
       </div>
     </div>
   </main>
@@ -327,7 +336,8 @@
         question: "Come si chiama l'energia prodotta dal sole?",
         answers: ["SOLARE"],
         clue: "La prima tappa è in una piazza nel cuore del centro, dove la pietra ricorda chi non è più tornato a casa.",
-        label: "Inserisci la parola chiave:"
+        label: "Inserisci la parola chiave:",
+        nextPlaceAnswers: ["MONUMENTO AI CADUTI", "MONUMENTO CADUTI", "PIAZZA GIOVANNI XXIII"]
       },
       {
         title: "Tappa 1: Monumento ai Caduti",
@@ -337,7 +347,8 @@
         question: "Come si chiamano le sostanze tossiche che rimangono nel terreno dopo una guerra?",
         answers: ["VELENI"],
         clue: "Vai dove un tempo gli Scaligeri controllavano tutta la pianura: cercalo dove ancora si erge possente una torre medievale.",
-        label: "Inserisci la parola chiave:"
+        label: "Inserisci la parola chiave:",
+        nextPlaceAnswers: ["CASTELLO SCALIGERO", "CASTELLO", "CASTELLO DI VILLAFRANCA"]
       },
       {
         title: "Tappa 2: Castello Scaligero",
@@ -347,7 +358,8 @@
         question: "La pietra delle mura viene da lontano o è locale? Quale parola chiave indica una scelta che riduce trasporti e inquinamento?",
         answers: ["LOCALE"],
         clue: "Vicino a te c'è una piccola chiesa barocca che un conte donò a una confraternita nel 1499. Trovala lungo il Corso principale.",
-        label: "Inserisci la parola chiave:"
+        label: "Inserisci la parola chiave:",
+        nextPlaceAnswers: ["CHIESA DELLA DISCIPLINA", "CHIESA DISCIPLINA", "CHIESA DELLA VISITAZIONE", "DISCIPLINA"]
       },
       {
         title: "Tappa 3: Chiesa della Disciplina",
@@ -357,7 +369,8 @@
         question: "In quanti minuti di doccia si consumano circa 50 litri d'acqua?",
         answers: ["CINQUE", "5"],
         clue: "Cerca un palazzo nobiliare del Settecento dove, in una calda estate del 1859, due imperatori si sedettero allo stesso tavolo per fermare una guerra.",
-        label: "Inserisci la parola chiave:"
+        label: "Inserisci la parola chiave:",
+        nextPlaceAnswers: ["PALAZZO BOTTAGISIO", "BOTTAGISIO", "CASA DEL TRATTATO", "PALAZZO DEL TRATTATO"]
       },
       {
         title: "Tappa 4: Palazzo Bottagisio",
@@ -367,7 +380,8 @@
         question: "In quanti anni si decompone una bottiglia di plastica abbandonata in natura?",
         answers: ["CINQUECENTO", "500"],
         clue: "Vai verso un edificio costruito tra il 1884 e il 1885, quando i cittadini di Villafranca imparavano a fare... centro!",
-        label: "Inserisci la parola chiave:"
+        label: "Inserisci la parola chiave:",
+        nextPlaceAnswers: ["EX TIRO A SEGNO", "TIRO A SEGNO", "EX POLIGONO", "POLIGONO", "EX POLIGONO DI TIRO A SEGNO", "POLIGONO DI TIRO A SEGNO"]
       },
       {
         title: "Tappa 5: Ex Poligono di Tiro a Segno",
@@ -377,7 +391,8 @@
         question: "Se poteste riqualificare questo edificio, cosa diventerebbe? Proponete un'idea sostenibile in una parola sola.",
         free: true,
         clue: "L'ultima tappa è un luogo verde e tranquillo che porta il nome di una battaglia del Risorgimento combattuta nel giugno del 1859, lo stesso anno del Trattato!",
-        label: "Scrivi una parola-proposta:"
+        label: "Scrivi una parola-proposta:",
+        nextPlaceAnswers: ["GIARDINO MAGENTA", "MAGENTA", "GIARDINI MAGENTA"]
       },
       {
         title: "Tappa finale: Giardino Magenta",
@@ -392,7 +407,6 @@
     ];
 
     let currentStep = Number(localStorage.getItem("esploraAmbienteStep")) || 0;
-    let solved = false;
     let mapZoom = 1;
 
     const progressText = document.getElementById("progressText");
@@ -402,14 +416,18 @@
     const learningText = document.getElementById("learningText");
     const questionText = document.getElementById("questionText");
     const answerLabel = document.getElementById("answerLabel");
+    const answerControl = document.getElementById("answerControl");
     const checkBtn = document.getElementById("checkBtn");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const resetBtn = document.getElementById("resetBtn");
     const messageBox = document.getElementById("messageBox");
     const clueBox = document.getElementById("clueBox");
-    const clueTitle = document.getElementById("clueTitle");
     const clueText = document.getElementById("clueText");
+    const placeCheckBox = document.getElementById("placeCheckBox");
+    const placeInput = document.getElementById("placeInput");
+    const checkPlaceBtn = document.getElementById("checkPlaceBtn");
+    const placeMessageBox = document.getElementById("placeMessageBox");
     const mapOverlay = document.getElementById("mapOverlay");
     const mapImage = document.getElementById("mapImage");
 
@@ -419,11 +437,28 @@
         .toUpperCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^A-Z0-9 ]/g, " ")
         .replace(/\s+/g, " ");
     }
 
+    function renderAnswerField(step) {
+      if (step.final) {
+        answerControl.innerHTML = '<textarea id="answerInput" autocomplete="off"></textarea>';
+      } else {
+        answerControl.innerHTML = '<input id="answerInput" type="text" autocomplete="off" />';
+      }
+
+      const input = document.getElementById("answerInput");
+      input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !steps[currentStep].final) {
+          e.preventDefault();
+          checkAnswer();
+        }
+      });
+      setTimeout(() => input.focus(), 50);
+    }
+
     function renderStep() {
-      solved = false;
       const step = steps[currentStep];
 
       progressText.textContent = `Tappa ${currentStep + 1} di ${steps.length}`;
@@ -433,44 +468,27 @@
       learningText.textContent = step.learning;
       questionText.textContent = step.question;
       answerLabel.textContent = step.label;
-
-      let inputEl = document.getElementById("answerInput");
-      const currentTag = inputEl.tagName.toLowerCase();
-      const desiredTag = step.final ? "textarea" : "input";
-
-      if (currentTag !== desiredTag) {
-        inputEl.outerHTML = step.final
-          ? '<textarea id="answerInput" autocomplete="off"></textarea>'
-          : '<input id="answerInput" type="text" autocomplete="off" />';
-      }
-
-      inputEl = document.getElementById("answerInput");
-      inputEl.value = "";
-      inputEl.onkeydown = function(e) {
-        if (e.key === "Enter" && !steps[currentStep].final) {
-          e.preventDefault();
-          checkAnswer();
-        }
-      };
-
-      setTimeout(() => inputEl.focus(), 50);
-
-      hideMessage();
-      clueBox.classList.remove("visible");
-      clueTitle.textContent = step.final ? "🏁 Missione completata" : "📍 Indizio per il luogo successivo";
       clueText.textContent = step.clue;
-      nextBtn.style.display = currentStep === steps.length - 1 ? "none" : "inline-block";
+
+      renderAnswerField(step);
+      hideMessage(messageBox);
+      hideMessage(placeMessageBox);
+
+      clueBox.classList.remove("visible");
+      placeCheckBox.classList.remove("visible");
+      placeInput.value = "";
+      nextBtn.style.display = "none";
       prevBtn.disabled = currentStep === 0;
     }
 
-    function showMessage(text, type) {
-      messageBox.textContent = text;
-      messageBox.className = `message ${type}`;
+    function showMessage(box, text, type) {
+      box.textContent = text;
+      box.className = `message ${type}`;
     }
 
-    function hideMessage() {
-      messageBox.textContent = "";
-      messageBox.className = "message";
+    function hideMessage(box) {
+      box.textContent = "";
+      box.className = "message";
     }
 
     function checkAnswer() {
@@ -479,7 +497,7 @@
       const value = normalize(inputEl.value);
 
       if (!value) {
-        showMessage("Scrivete una risposta prima di continuare.", "error");
+        showMessage(messageBox, "Scrivete una risposta prima di continuare.", "error");
         return;
       }
 
@@ -494,16 +512,42 @@
       }
 
       if (correct) {
-        solved = true;
         if (step.final) {
-          showMessage("✅ Slogan registrato! Missione completata.", "ok");
+          showMessage(messageBox, "✅ Slogan registrato! Missione completata.", "ok");
           clueBox.classList.add("visible");
+          clueText.textContent = step.clue + " Buona Giornata Mondiale dell'Ambiente!";
+          placeCheckBox.classList.remove("visible");
         } else {
-          showMessage("✅ Corretto! Avete sbloccato l'indizio successivo.", "ok");
+          showMessage(messageBox, "✅ Corretto! Avete sbloccato l'indizio successivo.", "ok");
           clueBox.classList.add("visible");
+          placeCheckBox.classList.add("visible");
+          placeInput.value = "";
+          hideMessage(placeMessageBox);
+          nextBtn.style.display = "none";
+          setTimeout(() => placeInput.focus(), 150);
         }
       } else {
-        showMessage("❌ Risposta non corretta. Rileggete l'approfondimento e riprovate.", "error");
+        showMessage(messageBox, "❌ Risposta non corretta. Rileggete l'approfondimento e riprovate.", "error");
+      }
+    }
+
+    function checkNextPlace() {
+      const step = steps[currentStep];
+      const value = normalize(placeInput.value);
+
+      if (!value) {
+        showMessage(placeMessageBox, "Scrivete il nome del luogo che pensate di dover raggiungere.", "error");
+        return;
+      }
+
+      const correctPlace = step.nextPlaceAnswers.some(answer => normalize(answer) === value);
+
+      if (correctPlace) {
+        showMessage(placeMessageBox, "✅ Luogo corretto! Ora potete passare alla tappa successiva.", "ok");
+        nextBtn.style.display = "inline-block";
+      } else {
+        showMessage(placeMessageBox, "❌ Non è il luogo giusto. Rileggete l'indizio e guardate la mappa.", "error");
+        nextBtn.style.display = "none";
       }
     }
 
@@ -565,14 +609,20 @@
     });
 
     checkBtn.addEventListener("click", checkAnswer);
+    checkPlaceBtn.addEventListener("click", checkNextPlace);
     nextBtn.addEventListener("click", goNext);
     prevBtn.addEventListener("click", goPrev);
     resetBtn.addEventListener("click", resetProgress);
 
-    document.addEventListener("keydown", function(e) {
-      if (e.key === "Escape") {
-        closeMap();
+    placeInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        checkNextPlace();
       }
+    });
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") closeMap();
     });
 
     renderStep();
