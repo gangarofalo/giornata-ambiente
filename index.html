@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Esplora Ambiente - Villafranca</title>
+  <style>
+    :root {
+      --green: #1f7a3f;
+      --dark: #1f2933;
+      --light: #f7f7f2;
+      --border: #d8ddd2;
+      --error: #b00020;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      line-height: 1.5;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--green);
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 16px;
+      cursor: pointer;
+      background: var(--green);
+      color: white;
+    }
+
+    button.secondary {
+      background: #eef3ee;
+      color: var(--dark);
+      border: 1px solid var(--border);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .progress {
+      font-size: 14px;
+      color: #5c6670;
+      margin-bottom: 12px;
+    }
+
+    .theme {
+      display: inline-block;
+      background: #e9f6ed;
+      color: var(--green);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 6px;
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-top: 18px;
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+
+    .address, .note {
+      background: #f3f5f2;
+      border-left: 4px solid var(--green);
+      padding: 10px 12px;
+      margin: 12px 0;
+      border-radius: 6px;
+    }
+
+    .question {
+      font-weight: bold;
+      font-size: 18px;
+      margin: 14px 0 8px;
+    }
+
+    input, textarea {
+      width: 100%;
+      font-size: 18px;
+      padding: 12px;
+      border: 1px solid #b8c0b0;
+      border-radius: 8px;
+      margin: 8px 0 12px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .message.ok {
+      display: block;
+      background: #e9f6ed;
+      border: 1px solid #b9dfc5;
+    }
+
+    .message.error {
+      display: block;
+      background: #fff0f0;
+      color: var(--error);
+      border: 1px solid #f1b7b7;
+    }
+
+    .clue {
+      display: none;
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #fffbe6;
+      border: 1px solid #eadf9a;
+    }
+
+    .clue.visible {
+      display: block;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .final-box {
+      background: #e9f6ed;
+      border: 1px solid #b9dfc5;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .map-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: white;
+      display: none;
+      flex-direction: column;
+    }
+
+    .map-overlay.visible {
+      display: flex;
+    }
+
+    .map-toolbar {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .map-toolbar .left,
+    .map-toolbar .right {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .map-toolbar button {
+      padding: 8px 10px;
+      font-size: 15px;
+    }
+
+    .map-container {
+      flex: 1;
+      overflow: auto;
+      background: #efefef;
+      text-align: center;
+      touch-action: pan-x pan-y pinch-zoom;
+      padding: 8px;
+    }
+
+    .map-container img {
+      width: 100%;
+      max-width: none;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      transform-origin: top left;
+    }
+
+    .small {
+      font-size: 14px;
+      color: #5c6670;
+    }
+
+    @media (max-width: 520px) {
+      header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      header button {
+        width: 100%;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌍 Esplora Ambiente</h1>
+    <button id="openMapBtn" type="button">🗺️ Mostra mappa</button>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="progress" id="progressText"></div>
+      <span class="theme" id="themeText"></span>
+      <h2 id="titleText"></h2>
+      <div class="address" id="addressBox"></div>
+
+      <h3>📘 Approfondimento</h3>
+      <p id="learningText"></p>
+
+      <h3>🔐 Domanda per sbloccare l'indizio</h3>
+      <div class="question" id="questionText"></div>
+
+      <label for="answerInput" id="answerLabel">Inserisci la parola chiave:</label>
+      <input id="answerInput" type="text" autocomplete="off" />
+
+      <div class="buttons">
+        <button id="checkBtn" type="button">Verifica</button>
+        <button id="prevBtn" class="secondary" type="button">Tappa precedente</button>
+        <button id="resetBtn" class="secondary" type="button">Ricomincia</button>
+      </div>
+
+      <div id="messageBox" class="message"></div>
+
+      <div id="clueBox" class="clue">
+        <h3 id="clueTitle">📍 Indizio per il luogo successivo</h3>
+        <p id="clueText"></p>
+        <div class="buttons">
+          <button id="nextBtn" type="button">Vai alla tappa successiva</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="mapOverlay" class="map-overlay" aria-hidden="true">
+    <div class="map-toolbar">
+      <div class="left">
+        <button id="closeMapBtn" type="button">✕ Chiudi</button>
+      </div>
+      <div class="right">
+        <button id="zoomOutBtn" class="secondary" type="button">−</button>
+        <button id="zoomResetBtn" class="secondary" type="button">100%</button>
+        <button id="zoomInBtn" class="secondary" type="button">+</button>
+      </div>
+    </div>
+    <div class="map-container">
+      <img id="mapImage" src="mappa_villafranca.png" alt="Mappa del percorso a Villafranca di Verona" />
+      <p class="small">Puoi ingrandire con i pulsanti oppure con lo zoom del telefono.</p>
+    </div>
+  </div>
+
+  <script>
+    const steps = [
+      {
+        title: "Partenza: ENGIM Veneto",
+        theme: "FUTURO",
+        address: "Via Novara / N. Sauro 3, Villafranca di Verona",
+        learning: "Voi studiate meccanica ed elettronica: siete già al centro della rivoluzione verde. Il motore a combustione che smontate oggi sta lasciando spazio ai motori elettrici. Gli impianti elettrici che cablate potranno alimentare pannelli solari e colonnine di ricarica. Il mondo ha bisogno delle vostre competenze, applicate in modo nuovo. Il futuro green lo costruirete voi, con le mani.",
+        question: "Come si chiama l'energia prodotta dal sole?",
+        answers: ["SOLARE"],
+        clue: "La prima tappa è in una piazza nel cuore del centro, dove la pietra ricorda chi non è più tornato a casa.",
+        label: "Inserisci la parola chiave:"
+      },
+      {
+        title: "Tappa 1: Monumento ai Caduti",
+        theme: "MEMORIA",
+        address: "Piazza Giovanni XXIII, Villafranca di Verona",
+        learning: "Le guerre sono tra i più grandi disastri ambientali della storia: foreste distrutte, fiumi avvelenati, terreni contaminati da metalli pesanti per secoli. Ricordare chi è caduto significa anche capire che la pace non è solo assenza di guerra: è prendersi cura del mondo che lasciamo agli altri.",
+        question: "Come si chiamano le sostanze tossiche che rimangono nel terreno dopo una guerra?",
+        answers: ["VELENI"],
+        clue: "Vai dove un tempo gli Scaligeri controllavano tutta la pianura: cercalo dove ancora si erge possente una torre medievale.",
+        label: "Inserisci la parola chiave:"
+      },
+      {
+        title: "Tappa 2: Castello Scaligero",
+        theme: "ENERGIA",
+        address: "Piazza Castello, Villafranca di Verona",
+        learning: "Il Castello Scaligero fu costruito a partire dal 1199 ed è uno dei simboli di Villafranca. Le sue mura in pietra sono spesse e pesanti: questo aiuta a mantenere gli ambienti più freschi d'estate e più caldi d'inverno. Si chiama massa termica. Gli architetti moderni hanno riscoperto questo principio per progettare edifici che consumano meno energia.",
+        question: "La pietra delle mura viene da lontano o è locale? Quale parola chiave indica una scelta che riduce trasporti e inquinamento?",
+        answers: ["LOCALE"],
+        clue: "Vicino a te c'è una piccola chiesa barocca che un conte donò a una confraternita nel 1499. Trovala lungo il Corso principale.",
+        label: "Inserisci la parola chiave:"
+      },
+      {
+        title: "Tappa 3: Chiesa della Disciplina",
+        theme: "ACQUA",
+        address: "Corso Vittorio Emanuele II 173, Villafranca di Verona",
+        learning: "Sotto Villafranca scorre una falda acquifera: un grande serbatoio sotterraneo alimentato dalle piogge e dalle Alpi. La pianura veneta è ricca d'acqua, ma il consumo eccessivo e l'agricoltura intensiva possono far scendere il livello delle falde. Un italiano usa in media oltre 200 litri d'acqua al giorno.",
+        question: "In quanti minuti di doccia si consumano circa 50 litri d'acqua?",
+        answers: ["CINQUE", "5"],
+        clue: "Cerca un palazzo nobiliare del Settecento dove, in una calda estate del 1859, due imperatori si sedettero allo stesso tavolo per fermare una guerra.",
+        label: "Inserisci la parola chiave:"
+      },
+      {
+        title: "Tappa 4: Palazzo Bottagisio",
+        theme: "RICICLO",
+        address: "Via Pace 40, Villafranca di Verona",
+        learning: "Palazzo Bottagisio è conosciuto anche come Casa del Trattato: qui nel 1859 si incontrarono Francesco Giuseppe e Napoleone III. In passato si buttava molto meno: i tessuti diventavano stracci, gli stracci carta, la carta concime. Tutto tornava in ciclo. Con la plastica abbiamo creato materiali che la natura smaltisce con enorme difficoltà. Il riciclo non è solo una moda: è recuperare un modo più intelligente di usare le risorse.",
+        question: "In quanti anni si decompone una bottiglia di plastica abbandonata in natura?",
+        answers: ["CINQUECENTO", "500"],
+        clue: "Vai verso un edificio costruito tra il 1884 e il 1885, quando i cittadini di Villafranca imparavano a fare... centro!",
+        label: "Inserisci la parola chiave:"
+      },
+      {
+        title: "Tappa 5: Ex Poligono di Tiro a Segno",
+        theme: "RIQUALIFICAZIONE",
+        address: "Zona ex Tiro a Segno, Villafranca di Verona",
+        learning: "Questo edificio è abbandonato da decenni. Abbatterlo e ricostruire qualcosa di nuovo avrebbe un costo ambientale enorme: cemento, camion per trasportare macerie, energia consumata. Le città più sostenibili spesso non demoliscono: riqualificano. Ex fabbriche possono diventare biblioteche, ex caserme orti urbani, vecchi spazi abbandonati nuovi luoghi per la comunità.",
+        question: "Se poteste riqualificare questo edificio, cosa diventerebbe? Proponete un'idea sostenibile in una parola sola.",
+        free: true,
+        clue: "L'ultima tappa è un luogo verde e tranquillo che porta il nome di una battaglia del Risorgimento combattuta nel giugno del 1859, lo stesso anno del Trattato!",
+        label: "Scrivi una parola-proposta:"
+      },
+      {
+        title: "Tappa finale: Giardino Magenta",
+        theme: "NATURA",
+        address: "Giardino Magenta, Villafranca di Verona",
+        learning: "Questo giardino era parte del campo del Tiro a Segno. Stesso spazio, destino completamente diverso. Alcuni volontari hanno scelto di non lasciarlo abbandonare: lo hanno ripulito, piantato e curato. Oggi ospita flora e insetti autoctoni ed è anche uno spazio culturale per la comunità. Non serve essere scienziati o politici per fare qualcosa per l'ambiente: serve decidere di farlo.",
+        question: "Sfida finale: costruite uno slogan per l'ambiente usando almeno tre di queste parole: SOLARE, VELENI, LOCALE, CINQUE, CINQUECENTO, la vostra parola libera, NATURA.",
+        final: true,
+        clue: "Missione completata! Tornate a scuola: l'avventura finisce dove è iniziata. Il futuro green lo costruirete voi, con le mani.",
+        label: "Scrivete qui il vostro slogan:"
+      }
+    ];
+
+    let currentStep = Number(localStorage.getItem("esploraAmbienteStep")) || 0;
+    let solved = false;
+    let mapZoom = 1;
+
+    const progressText = document.getElementById("progressText");
+    const themeText = document.getElementById("themeText");
+    const titleText = document.getElementById("titleText");
+    const addressBox = document.getElementById("addressBox");
+    const learningText = document.getElementById("learningText");
+    const questionText = document.getElementById("questionText");
+    const answerLabel = document.getElementById("answerLabel");
+    const checkBtn = document.getElementById("checkBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const messageBox = document.getElementById("messageBox");
+    const clueBox = document.getElementById("clueBox");
+    const clueTitle = document.getElementById("clueTitle");
+    const clueText = document.getElementById("clueText");
+    const mapOverlay = document.getElementById("mapOverlay");
+    const mapImage = document.getElementById("mapImage");
+
+    function normalize(text) {
+      return text
+        .trim()
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ");
+    }
+
+    function renderStep() {
+      solved = false;
+      const step = steps[currentStep];
+
+      progressText.textContent = `Tappa ${currentStep + 1} di ${steps.length}`;
+      themeText.textContent = `Tema: ${step.theme}`;
+      titleText.textContent = step.title;
+      addressBox.innerHTML = `<strong>Luogo:</strong> ${step.address}`;
+      learningText.textContent = step.learning;
+      questionText.textContent = step.question;
+      answerLabel.textContent = step.label;
+
+      let inputEl = document.getElementById("answerInput");
+      const currentTag = inputEl.tagName.toLowerCase();
+      const desiredTag = step.final ? "textarea" : "input";
+
+      if (currentTag !== desiredTag) {
+        inputEl.outerHTML = step.final
+          ? '<textarea id="answerInput" autocomplete="off"></textarea>'
+          : '<input id="answerInput" type="text" autocomplete="off" />';
+      }
+
+      inputEl = document.getElementById("answerInput");
+      inputEl.value = "";
+      inputEl.onkeydown = function(e) {
+        if (e.key === "Enter" && !steps[currentStep].final) {
+          e.preventDefault();
+          checkAnswer();
+        }
+      };
+
+      setTimeout(() => inputEl.focus(), 50);
+
+      hideMessage();
+      clueBox.classList.remove("visible");
+      clueTitle.textContent = step.final ? "🏁 Missione completata" : "📍 Indizio per il luogo successivo";
+      clueText.textContent = step.clue;
+      nextBtn.style.display = currentStep === steps.length - 1 ? "none" : "inline-block";
+      prevBtn.disabled = currentStep === 0;
+    }
+
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+    }
+
+    function hideMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "message";
+    }
+
+    function checkAnswer() {
+      const step = steps[currentStep];
+      const inputEl = document.getElementById("answerInput");
+      const value = normalize(inputEl.value);
+
+      if (!value) {
+        showMessage("Scrivete una risposta prima di continuare.", "error");
+        return;
+      }
+
+      let correct = false;
+
+      if (step.final) {
+        correct = value.length >= 12;
+      } else if (step.free) {
+        correct = value.length >= 3 && !value.includes(" ");
+      } else {
+        correct = step.answers.includes(value);
+      }
+
+      if (correct) {
+        solved = true;
+        if (step.final) {
+          showMessage("✅ Slogan registrato! Missione completata.", "ok");
+          clueBox.classList.add("visible");
+        } else {
+          showMessage("✅ Corretto! Avete sbloccato l'indizio successivo.", "ok");
+          clueBox.classList.add("visible");
+        }
+      } else {
+        showMessage("❌ Risposta non corretta. Rileggete l'approfondimento e riprovate.", "error");
+      }
+    }
+
+    function goNext() {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        localStorage.setItem("esploraAmbienteStep", currentStep);
+        renderStep();
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function goPrev() {
+      if (currentStep > 0) {
+        currentStep--;
+        localStorage.setItem("esploraAmbienteStep", currentStep);
+        renderStep();
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function resetProgress() {
+      const ok = confirm("Vuoi ricominciare il percorso dalla partenza?");
+      if (ok) {
+        currentStep = 0;
+        localStorage.setItem("esploraAmbienteStep", currentStep);
+        location.reload();
+      }
+    }
+
+    function openMap() {
+      mapOverlay.classList.add("visible");
+      mapOverlay.setAttribute("aria-hidden", "false");
+    }
+
+    function closeMap() {
+      mapOverlay.classList.remove("visible");
+      mapOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function applyMapZoom() {
+      mapImage.style.width = `${100 * mapZoom}%`;
+      document.getElementById("zoomResetBtn").textContent = `${Math.round(mapZoom * 100)}%`;
+    }
+
+    document.getElementById("openMapBtn").addEventListener("click", openMap);
+    document.getElementById("closeMapBtn").addEventListener("click", closeMap);
+    document.getElementById("zoomInBtn").addEventListener("click", function() {
+      mapZoom = Math.min(3, mapZoom + 0.25);
+      applyMapZoom();
+    });
+    document.getElementById("zoomOutBtn").addEventListener("click", function() {
+      mapZoom = Math.max(0.75, mapZoom - 0.25);
+      applyMapZoom();
+    });
+    document.getElementById("zoomResetBtn").addEventListener("click", function() {
+      mapZoom = 1;
+      applyMapZoom();
+    });
+
+    checkBtn.addEventListener("click", checkAnswer);
+    nextBtn.addEventListener("click", goNext);
+    prevBtn.addEventListener("click", goPrev);
+    resetBtn.addEventListener("click", resetProgress);
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        closeMap();
+      }
+    });
+
+    renderStep();
+  </script>
+</body>
+</html>
